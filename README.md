@@ -1,19 +1,19 @@
 # dependency-fire-drill
 
-Simulate supply chain attacks on your dependencies. See exactly what a compromised package can access.
+Simulate supply chain attacks on your dependencies. See exactly what each package can access—and fix it before it becomes real.
 
 ## What is this?
 
-`dependency-fire-drill` is a security auditing CLI that sandboxes your project dependencies and logs their file system, network, and environment access attempts. It generates actionable "blast radius" reports showing the real attack surface of your dependency tree—helping you understand and mitigate supply chain attack risks before they happen.
+dependency-fire-drill is a CLI security tool that sandboxes your project dependencies and measures their potential blast radius. It reveals what file system, network, and environment data each package could access if compromised. Perfect for DevSecOps teams managing supply chain risk in npm, PyPI, and other ecosystems.
 
 ## Features
 
-- **Sandboxed execution** – Isolates each dependency in a monitored runtime environment
-- **Comprehensive access logging** – Tracks file system reads/writes, network connections, and environment variable access
-- **Multi-language support** – Audits npm (JavaScript) and PyPI (Python) dependencies
-- **Blast radius reports** – JSON and human-readable output showing attack surface per dependency
-- **CI/CD ready** – GitHub Actions integration and machine-parseable output formats
-- **Zero-trust inspection** – No assumptions; test what dependencies actually do, not what they claim
+- **Sandboxed execution** — Run dependency code in isolated environments to safely detect malicious capabilities
+- **Blast radius reporting** — Quantify which dependencies have access to secrets, source code, or network
+- **Multi-language support** — Analyze Node.js (npm) and Python (PyPI) projects
+- **CI/CD integration** — Generate actionable reports for automated security gates
+- **Risk scoring** — Prioritize remediation by attack surface area
+- **Comparison mode** — Track risk changes across versions and commits
 
 ## Quick Start
 
@@ -26,61 +26,64 @@ pip install dependency-fire-drill
 ### Basic Usage
 
 ```bash
-# Audit a Node.js project
-dependency-fire-drill audit --package-json ./package.json --output report.json
+# Scan your project
+dfd scan
 
-# Audit a Python project
-dependency-fire-drill audit --requirements ./requirements.txt --output report.json
+# Generate a blast radius report
+dfd report --format html --output report.html
 
-# View a formatted report
-dependency-fire-drill report --input report.json --format human
+# Compare risk between two dependency states
+dfd compare old-lockfile.json new-lockfile.json
 ```
 
-### CI/CD Integration
+### For Node.js Projects
 
-Add to your GitHub Actions workflow:
+```bash
+dfd scan --manifest package.json --lock package-lock.json
+```
 
-```yaml
-- name: Run dependency fire drill
-  uses: your-org/dependency-fire-drill@v1
-  with:
-    package-file: package.json
-    fail-on-high: true
+### For Python Projects
+
+```bash
+dfd scan --manifest requirements.txt
+dfd scan --manifest pyproject.toml
 ```
 
 ## Usage Examples
 
-**Scan a single package:**
+**View what each dependency can access:**
 ```bash
-dependency-fire-drill audit --package-json package.json
+dfd scan --verbose
 ```
 
-**Generate a report with risk scoring:**
+**Generate compliance-ready PDF report:**
 ```bash
-dependency-fire-drill audit --package-json package.json \
-  --sandbox-timeout 30 \
-  --output blast-radius.json
+dfd report --format pdf --threshold high
 ```
 
-**Export for security dashboard:**
+**Fail CI if risky dependencies detected:**
 ```bash
-dependency-fire-drill report --input blast-radius.json \
-  --format json \
-  --include-graph
+dfd scan --fail-on-risk-score 70
 ```
 
-The output includes:
-- Per-dependency access logs (files, network IPs, env vars)
-- Risk scores based on access patterns
-- Dependency graph showing transitive risks
-- Actionable recommendations
+**Track risk regression across releases:**
+```bash
+dfd compare v1.0.0-lockfile.json v1.1.0-lockfile.json --report
+```
 
 ## Tech Stack
 
-- **Language:** Python 3.9+
-- **Sandboxing:** OS-level process isolation with syscall monitoring
-- **Parsing:** npm/PyPI manifest readers
-- **Output:** JSON, human-readable text, CI integrations
+- **Language**: Python 3.9+
+- **Sandboxing**: Container-based isolation (Docker/system namespaces)
+- **Reporting**: Jinja2 templating, PDF/HTML output
+- **CLI**: Click framework
+- **Testing**: pytest
+
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md) — System design and sandboxing strategy
+- [Troubleshooting](docs/TROUBLESHOOTING.md) — Common issues and solutions
+- [Roadmap](ROADMAP.md) — Planned features and improvements
 
 ## License
 
